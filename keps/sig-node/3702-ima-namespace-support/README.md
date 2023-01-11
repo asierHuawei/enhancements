@@ -95,9 +95,7 @@ This can be achieved using IMA (Integrity Measurement Architecture) and EVM (Ext
 
 ## Proposal
 <!-- We propose to enable IMA linux namespaces in pods.
-
 Since IMA namespaces can be created when a container is launched, we can provide transparent integrity verification on any linux container.
-
 IMA and EVM can use a TPM chip as a hardware root of trust. Hence we can verify images against a set of golden hash values, as well as avoiding any further changes to the overlayfs to intercept calls and check the integrity of files. -->
 
 ### User Stories (Optional)
@@ -140,29 +138,21 @@ The linux kernel IMA namespace support is based on user namespaces. Therefore, t
 
 Should we enable IMA namespaces by default when enabling user namespaces?
 
-
 There will be a CRI API change which will allow the pod to use IMA namespaces and specify the namespace policy.
-
-  
 
 ### Linux kernel
 
-  
-
 IMA is only available in Linux hosts and Linux containers. Unfortunately, IMA is not a separate namespace, which is needed in order to isolate it and be used inside containers. Upcoming kernel patches should add support for IMA namespaces.
 
-  
 
 ### Runtime specification
 
 There is an ongoing discussion regarding the runtime changes.
 
-https://github.com/opencontainers/runc/pull/3639
- 
+https://github.com/opencontainers/runtime-spec/pull/1164
+
 
 ### CRI API
-
-  
 
 We propose to add the following message.
 
@@ -170,8 +160,19 @@ We propose to add the following message.
 
 ```protobuf
 
-message NamespaceOptions {
-  bool  ima = 6;
+message LinuxSandboxSecurityContext {
+    NamespaceOption namespace_options = 1;
+    SELinuxOption selinux_options = 2;
+    Int64Value run_as_user = 3;
+    Int64Value run_as_group = 8;
+    bool readonly_rootfs = 4;
+    repeated int64 supplemental_groups = 5;
+    bool privileged = 6;
+    SecurityProfile seccomp = 9;
+    SecurityProfile apparmor = 10;
+    string seccomp_profile_path = 7 [deprecated=true];
+    // new field
+    bool ima = 11;
 }
 
 ```
@@ -185,6 +186,8 @@ metadata:
   name: nginx
 spec:
   securityContext:
+  # New field
+
     ima: true
   containers:
   - name: nginx
@@ -202,14 +205,14 @@ This features will integrate with a future remote attestation procedure, which w
 
 ### Test Plan
 
-  
+
 
 Which unit tests should we include?
 
-  
+
 
 ### Graduation Criteria
-  
+
 
 #### GA
 
