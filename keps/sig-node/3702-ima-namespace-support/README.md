@@ -138,8 +138,6 @@ The linux kernel IMA namespace support is based on user namespaces. Therefore, t
 
 Should we enable IMA namespaces by default when enabling user namespaces?
 
-There will be a CRI API change which will allow the pod to use IMA namespaces and specify the namespace policy.
-
 ### Linux kernel
 
 IMA is only available in Linux hosts and Linux containers. Unfortunately, IMA is not a separate namespace, which is needed in order to isolate it and be used inside containers. Upcoming kernel patches should add support for IMA namespaces.
